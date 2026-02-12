@@ -43,7 +43,15 @@ app.set('view engine', 'ejs');
 // logging, parsing, and session handling.
 app.use(require('morgan')('combined'));
 app.use(require('body-parser').urlencoded({ extended: true }));
-app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
+app.use(require('express-session')({ 
+  secret: 'keyboard cat', 
+  resave: false, 
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    maxAge: 60000
+  }
+}));
 
 // Initialize Passport and restore authentication state, if any, from the
 // session.
@@ -74,8 +82,12 @@ app.post('/login',passport.authenticate('local', { failureRedirect: '/login' }),
 });
 
 app.get('/logout',
-  function(req, res){
+  function(req, res, next){
+    console.log('Logout route hit');
     req.logout();
+    req.session.destroy();
+    res.clearCookie('connect.sid');
+    console.log('Logout successful, redirecting...');
     res.redirect('/');
 });
 
